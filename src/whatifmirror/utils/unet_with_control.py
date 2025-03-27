@@ -1,7 +1,6 @@
 import torch
 from diffusers import ControlNetModel, UNet2DConditionModel
 
-
 class UNet2DConditionControlNetModel(torch.nn.Module):
     def __init__(self, unet: UNet2DConditionModel, controlnets: list[ControlNetModel], controlnet_scales: list[float]):
         super().__init__()

@@ -33,18 +33,26 @@ install_requires = [
 setup(
     name="whatifmirror",
     version="0.1.0",
-    description="real-time interactive image generation pipeline",
+    description="Real-time interactive image generation pipeline based on a customized version of StreamDiffusion",
     long_description=open("README.md", "r", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
     keywords="deep learning diffusion pytorch stable diffusion audioldm streamdiffusion real-time",
     license="Apache 2.0 License",
-    author="Aki, kizamimi, ddPn08, Verb, ramune, teftef6220, Tonimono, Chenfeng Xu, Ararat with the help of all our contributors (https://github.com/cumulo-autumn/StreamDiffusion/graphs/contributors)",
-    author_email="cumulokyoukai@gmail.com",
-    url="https://github.com/cumulo-autumn/StreamDiffusion",
+    author="Daniele Giannini",
+    author_email="contact.thewhatifproject@gmail.com",
+    url="https://github.com/thewhatifproject/WhatIfMirror",
     package_dir={"": "src"},
     packages=find_packages("src"),
     package_data={"whatifmirror": ["py.typed"]},
     include_package_data=True,
     python_requires=">=3.10.0",
-    install_requires=list(install_requires)
+    install_requires=list(install_requires),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: OS Independent"
+    ],
+    project_urls={
+        "Original project (StreamDiffusion)": "https://github.com/cumulo-autumn/StreamDiffusion"
+    }
 )
