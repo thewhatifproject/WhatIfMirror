@@ -23,6 +23,7 @@ class WhatifMirrorWrapper:
         output_type: Literal["pil", "pt", "np", "latent"] = "pil",
         lcm_lora_id: Optional[str] = None,
         HyperSD_lora_id: Optional[str] = None,
+        Lightning_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
         device: Literal["cpu", "cuda"] = "cuda",
         dtype: torch.dtype = torch.float16,
@@ -160,6 +161,7 @@ class WhatifMirrorWrapper:
             controlnet_dicts=controlnet_dicts,
             lcm_lora_id=lcm_lora_id,
             HyperSD_lora_id=HyperSD_lora_id,
+            Lightning_lora_id=Lightning_lora_id,
             vae_id=vae_id,
             t_index_list=t_index_list,
             acceleration=acceleration,
@@ -400,10 +402,11 @@ class WhatifMirrorWrapper:
         controlnet_dicts: Optional[Dict[str, float]] = None,
         lcm_lora_id: Optional[str] = None,
         HyperSD_lora_id: Optional[str] = None,
+        Lightning_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
         acceleration: Literal["none", "xformers", "tensorrt"] = "tensorrt",
         do_add_noise: bool = True,
-        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "lcm",
+        CM_lora_type: Literal["lcm", "Hyper_SD", "Lightning","none"] = "lcm",
         use_tiny_vae: bool = True,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2
@@ -527,6 +530,13 @@ class WhatifMirrorWrapper:
                         model_name="Hyper-SD15-1step-lora.safetensors",
                     )
                     print("Using 1-step Hyper-SD.")
+                stream.fuse_lora()
+            elif CM_lora_type == "Lightning":
+                print(f"-----------------Using Lightning {Lightning_lora_id}-----------------")
+                if Lightning_lora_id is not None:
+                    stream.load_lightning_lora(
+                        pretrained_model_name_or_path_or_dict="ByteDance/SDXL-Lightning", model_name=Lightning_lora_id
+                    )
                 stream.fuse_lora()
             else:  # CM_lora_type == "none"
                 pass

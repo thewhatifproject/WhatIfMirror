@@ -28,7 +28,7 @@ class WhatifMirror:
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         generator: Optional[torch.Generator] = torch.Generator(),
         denoising_steps_num: Union[None, int] = None,
-        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "none",
+        CM_lora_type: Literal["lcm", "Hyper_SD", "Lightning", "none"] = "none",
     ) -> None:
         self.device = pipe.device
         self.dtype = torch_dtype
@@ -114,6 +114,18 @@ class WhatifMirror:
         **kwargs,
     ) -> None:
         self.CM_lora_type = "Hyper_SD"
+        self.pipe.load_lora_weights(
+            hf_hub_download(pretrained_model_name_or_path_or_dict, model_name), adapter_name, **kwargs
+        )
+
+    def load_lightning_lora(
+        self,
+        pretrained_model_name_or_path_or_dict: Union[str, Dict[str, torch.Tensor]] = "ByteDance/SDXL-Lightning",
+        adapter_name: Optional[Any] = None,
+        model_name: Optional[str] = "sdxl_lightning_2step_lora.safetensors",
+        **kwargs,
+    ) -> None:
+        self.CM_lora_type = "Lightning"
         self.pipe.load_lora_weights(
             hf_hub_download(pretrained_model_name_or_path_or_dict, model_name), adapter_name, **kwargs
         )
@@ -559,7 +571,7 @@ class WhatifMirror:
 
             if self.denoising_steps_num > 1:
                 x_0_pred_out = x_0_pred_batch[-1].unsqueeze(0)
-                if self.CM_lora_type == "Hyper_SD":
+                if self.CM_lora_type == "Hyper_SD" or self.CM_lora_type == "Lightning":
                     self.x_t_latent_buffer = (
                         self.alpha_prod_t_sqrt[1:] * x_0_pred_batch[:-1] + self.beta_prod_t_sqrt[1:] * model_pred[:-1]
                     )
@@ -582,7 +594,7 @@ class WhatifMirror:
                     added_cond_kwargs = {"text_embeds": self.add_text_embeds.to(self.device), "time_ids": self.add_time_ids.to(self.device)}
                 x_0_pred, model_pred = self.unet_step(x_t_latent, t, idx, controlnet_images=controlnet_images, added_cond_kwargs=added_cond_kwargs)
                 if idx < len(self.sub_timesteps_tensor) - 1:
-                    if self.CM_lora_type == "Hyper_SD":
+                    if self.CM_lora_type == "Hyper_SD" or self.CM_lora_type == "Lightning":
                         x_t_latent = (
                             self.alpha_prod_t_sqrt[idx + 1] * x_0_pred + self.beta_prod_t_sqrt[idx + 1] * model_pred
                         )
