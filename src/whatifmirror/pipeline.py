@@ -11,7 +11,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
 )
 from huggingface_hub import hf_hub_download
 
-from whatifmirror.image_filter import SimilarImageFilter
+from whatifmirror.utils.image_filter import SimilarImageFilter
 from whatifmirror.utils.unet_with_control import UNet2DConditionControlNetModel
 
 class WhatifMirror:
