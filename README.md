@@ -7,10 +7,10 @@ This project is part of an artistic exploration of neural diffusion technologies
 
 WhatIfMirror extends and adapts existing components to enable:
 
-- Image generation using optimized *Stable Diffusion* models  
-- Support for *ControlNet* and *PEFT* pipelines  
-- Integration with real-time tools such as *StreamDiffusion* and *AudioLDM*  
-- Optional acceleration with CUDA and TensorRT  
+- Image generation using updated diffusers *Stable Diffusion* pipelines
+- Newer Pythorch version support  
+- Support for *ControlNet* and *PEFT*  
+- Optional acceleration (WIP)
 
 The goal is not only technical efficiency, but also to investigate how these tools can support artistic, performative, and narrative experiences.
 
@@ -19,7 +19,7 @@ The goal is not only technical efficiency, but also to investigate how these too
 Requirements:
 
 - Python >= 3.10  
-- CUDA-compatible GPU (optional, for acceleration)  
+- CUDA-compatible GPU
 - PyTorch
 
 ```bash
