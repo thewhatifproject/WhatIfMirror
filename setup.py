@@ -3,7 +3,6 @@ import re
 from setuptools import find_packages, setup
 
 _deps = [
-    "torch",
     "diffusers",
     "transformers",
     "accelerate",
