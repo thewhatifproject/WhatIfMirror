@@ -164,8 +164,6 @@ class WhatifMirror:
             controlnet_scales=[list(controlnet_dict.values())[0] for controlnet_dict in controlnet_dicts],
         )
         
-        print("Controlnet loading...")
-
     def enable_similar_image_filter(self, threshold: float = 0.98, max_skip_frame: float = 10) -> None:
         self.similar_image_filter = True
         self.similar_filter.set_threshold(threshold)
@@ -461,7 +459,6 @@ class WhatifMirror:
             x_t_latent_plus_uc = x_t_latent
 
         if controlnet_images is not None:
-            print("Controlnet images...")
             model_pred = self.unet(
                 x_t_latent_plus_uc,
                 t_list,
@@ -575,7 +572,6 @@ class WhatifMirror:
             if self.denoising_steps_num > 1:
                 x_0_pred_out = x_0_pred_batch[-1].unsqueeze(0)
                 if self.CM_lora_type == "Hyper_SD" or self.CM_lora_type == "Lightning":
-                    print ("In cm lora type...")
                     self.x_t_latent_buffer = (
                         self.alpha_prod_t_sqrt[1:] * x_0_pred_batch[:-1] + self.beta_prod_t_sqrt[1:] * model_pred[:-1]
                     )
