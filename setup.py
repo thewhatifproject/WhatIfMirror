@@ -27,7 +27,8 @@ install_requires = [
     deps["controlnet-aux"],
     deps["huggingface_hub"],
     deps["numpy"],
-    deps["peft"]
+    deps["peft"],
+    "https://github.com/FlyMyAI/stable-fast.git"
 ]
 
 setup(
