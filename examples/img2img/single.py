@@ -7,7 +7,7 @@ import fire
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from streamdiffusion.wrapper import StreamDiffusionWrapper
+from whatifmirror.wrapper import StreamDiffusionWrapper
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 

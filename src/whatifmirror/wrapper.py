@@ -9,9 +9,7 @@ import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline
 from PIL import Image
 
-from streamdiffusion import StreamDiffusion
-from streamdiffusion.image_utils import postprocess_image
-
+from whatifmirror import StreamDiffusion
 
 torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -343,9 +341,9 @@ class StreamDiffusionWrapper:
             The postprocessed image.
         """
         if self.frame_buffer_size > 1:
-            return postprocess_image(image_tensor.cpu(), output_type=output_type)
+            return self.postprocess_image(image_tensor.cpu(), output_type=output_type)
         else:
-            return postprocess_image(image_tensor.cpu(), output_type=output_type)[0]
+            return self.postprocess_image(image_tensor.cpu(), output_type=output_type)[0]
 
     def _load_model(
         self,
@@ -469,17 +467,17 @@ class StreamDiffusionWrapper:
                 stream.pipe.enable_xformers_memory_efficient_attention()
             if acceleration == "tensorrt":
                 from polygraphy import cuda
-                from streamdiffusion.acceleration.tensorrt import (
+                from whatifmirror.acceleration.tensorrt import (
                     TorchVAEEncoder,
                     compile_unet,
                     compile_vae_decoder,
                     compile_vae_encoder,
                 )
-                from streamdiffusion.acceleration.tensorrt.engine import (
+                from whatifmirror.acceleration.tensorrt.engine import (
                     AutoencoderKLEngine,
                     UNet2DConditionModelEngine,
                 )
-                from streamdiffusion.acceleration.tensorrt.models import (
+                from whatifmirror.acceleration.tensorrt.models import (
                     VAE,
                     UNet,
                     VAEEncoder,
@@ -622,7 +620,7 @@ class StreamDiffusionWrapper:
 
                 print("TensorRT acceleration enabled.")
             if acceleration == "sfast":
-                from streamdiffusion.acceleration.sfast import (
+                from whatifmirror.acceleration.sfast import (
                     accelerate_with_stable_fast,
                 )
 

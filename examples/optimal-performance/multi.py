@@ -9,12 +9,12 @@ from typing import List, Literal
 import fire
 from PIL import Image, ImageTk
 
-from streamdiffusion.image_utils import postprocess_image
+from whatifmirror.image_utils import postprocess_image
 
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from streamdiffusion.wrapper import StreamDiffusionWrapper
+from whatifmirror.wrapper import StreamDiffusionWrapper
 
 
 image_update_counter = 0

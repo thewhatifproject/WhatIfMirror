@@ -11,11 +11,11 @@ import requests
 import torch
 from tqdm import tqdm
 
-from streamdiffusion.image_utils import postprocess_image
+from whatifmirror.image_utils import postprocess_image
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from streamdiffusion.wrapper import StreamDiffusionWrapper
+from whatifmirror.wrapper import StreamDiffusionWrapper
 
 
 def _postprocess_image(queue: Queue) -> None:

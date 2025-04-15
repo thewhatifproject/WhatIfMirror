@@ -10,10 +10,10 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
     retrieve_latents,
 )
 
-from streamdiffusion.image_filter import SimilarImageFilter
+from whatifmirror.image_filter import SimilarImageFilter
 
 
-class StreamDiffusion:
+class WhatifMirror:
     def __init__(
         self,
         pipe: StableDiffusionPipeline,

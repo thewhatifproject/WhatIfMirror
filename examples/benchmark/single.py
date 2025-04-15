@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from streamdiffusion.wrapper import StreamDiffusionWrapper
+from whatifmirror.wrapper import StreamDiffusionWrapper
 
 
 def download_image(url: str):
