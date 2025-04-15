@@ -3,7 +3,6 @@ from typing import Optional
 
 import torch
 
-
 class SimilarImageFilter:
     def __init__(self, threshold: float = 0.98, max_skip_frame: float = 10) -> None:
         self.threshold = threshold
