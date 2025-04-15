@@ -34,10 +34,10 @@ class WhatIfMirrorWrapper:
         frame_buffer_size: int = 1,
         width: int = 512,
         height: int = 512,
-        acceleration: Literal["none", "xformers", "tensorrt"] = "tensorrt",
+        acceleration: Literal["none", "tensorrt", "sfast"] = "none",
         do_add_noise: bool = True,
         device_ids: Optional[List[int]] = None,
-        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "Hyper_SD",
+        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "none",
         use_tiny_vae: bool = True,
         enable_similar_image_filter: bool = False,
         similar_image_filter_threshold: float = 0.98,
@@ -399,9 +399,9 @@ class WhatIfMirrorWrapper:
         lcm_lora_id: Optional[str] = None,
         HyperSD_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
-        acceleration: Literal["none", "xformers", "tensorrt"] = "tensorrt",
+        acceleration: Literal["none", "sfast", "tensorrt"] = "none",
         do_add_noise: bool = True,
-        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "lcm",
+        CM_lora_type: Literal["lcm", "Hyper_SD", "none"] = "none",
         use_tiny_vae: bool = True,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
@@ -534,8 +534,6 @@ class WhatIfMirrorWrapper:
                 )
 
         try:
-            if acceleration == "xformers":
-                stream.pipe.enable_xformers_memory_efficient_attention()
             if acceleration == "tensorrt":
                 from polygraphy import cuda
 
