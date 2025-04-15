@@ -9,7 +9,7 @@ import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline
 from PIL import Image
 
-from whatifmirror import WhatIfMirror
+from whatifmirror import WhatifMirror
 
 torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
