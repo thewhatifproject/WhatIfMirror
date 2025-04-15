@@ -1,9 +1,8 @@
 from typing import Optional
 
-from sfast.compilers.stable_diffusion_pipeline_compiler import CompilationConfig, compile
+from sfast.compilers.diffusion_pipeline_compiler import (compile,CompilationConfig)
 
 from ...pipeline import WhatIfMirror
-
 
 def accelerate_with_stable_fast(
     stream: WhatIfMirror,
@@ -11,13 +10,6 @@ def accelerate_with_stable_fast(
 ):
     if config is None:
         config = CompilationConfig.Default()
-        # xformers and Triton are suggested for achieving best performance.
-        try:
-            import xformers
-
-            config.enable_xformers = True
-        except ImportError:
-            print("xformers not installed, skip")
         try:
             import triton
 
