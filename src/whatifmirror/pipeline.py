@@ -15,7 +15,7 @@ from utils.image_filter import SimilarImageFilter
 from utils.unet_with_control import UNet2DConditionControlNetModel
 
 
-class StreamDiffusion:
+class WhatIfMirror:
     def __init__(
         self,
         pipe: StableDiffusionPipeline,

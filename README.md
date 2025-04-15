@@ -1,4 +1,4 @@
-# StreamDiffusion
+# WhatIfMirror
 
 [English](./README.md) | [日本語](./README-ja.md) | [한국어](./README-ko.md)
 
@@ -7,11 +7,11 @@
   <img src="./assets/demo_09.gif" width=90%>
 </p>
 
-# StreamDiffusion: A Pipeline-Level Solution for Real-Time Interactive Generation
+# WhatIfMirror: A Pipeline-Level Solution for Real-Time Interactive Generation
 
 **Authors:** [Akio Kodaira](https://www.linkedin.com/in/akio-kodaira-1a7b98252/), [Chenfeng Xu](https://www.chenfengx.com/), Toshiki Hazama, [Takanori Yoshimoto](https://twitter.com/__ramu0e__), [Kohei Ohno](https://www.linkedin.com/in/kohei--ohno/), [Shogo Mitsuhori](https://me.ddpn.world/), [Soichi Sugano](https://twitter.com/toni_nimono), [Hanying Cho](https://twitter.com/hanyingcl), [Zhijian Liu](https://zhijianliu.com/), [Kurt Keutzer](https://scholar.google.com/citations?hl=en&user=ID9QePIAAAAJ)
 
-StreamDiffusion is an innovative diffusion pipeline designed for real-time interactive generation. It introduces significant performance enhancements to current diffusion-based image generation techniques.
+WhatIfMirror is an innovative diffusion pipeline designed for real-time interactive generation. It introduces significant performance enhancements to current diffusion-based image generation techniques.
 
 [![arXiv](https://img.shields.io/badge/arXiv-2312.12491-b31b1b.svg)](https://arxiv.org/abs/2312.12491)
 [![Hugging Face Papers](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-papers-yellow)](https://huggingface.co/papers/2312.12491)
@@ -43,18 +43,18 @@ We sincerely thank [Taku Fujimoto](https://twitter.com/AttaQjp) and [Radamés Aj
 6. **Model Acceleration Tools**
    - Utilizes various tools for model optimization and performance boost.
 
-When images are produced using our proposed StreamDiffusion pipeline in an environment with **GPU: RTX 4090**, **CPU: Core i9-13900K**, and **OS: Ubuntu 22.04.3 LTS**.
+When images are produced using our proposed WhatIfMirror pipeline in an environment with **GPU: RTX 4090**, **CPU: Core i9-13900K**, and **OS: Ubuntu 22.04.3 LTS**.
 
 |            model            | Denoising Step | fps on Txt2Img | fps on Img2Img |
 | :-------------------------: | :------------: | :------------: | :------------: |
 |          SD-turbo           |       1        |     106.16     |     93.897     |
 | LCM-LoRA <br>+<br> KohakuV2 |       4        |     38.023     |     37.133     |
 
-Feel free to explore each feature by following the provided links to learn more about StreamDiffusion's capabilities. If you find it helpful, please consider citing our work:
+Feel free to explore each feature by following the provided links to learn more about WhatIfMirror's capabilities. If you find it helpful, please consider citing our work:
 
 ```bash
 @article{kodaira2023streamdiffusion,
-      title={StreamDiffusion: A Pipeline-level Solution for Real-time Interactive Generation},
+      title={WhatIfMirror: A Pipeline-level Solution for Real-time Interactive Generation},
       author={Akio Kodaira and Chenfeng Xu and Toshiki Hazama and Takanori Yoshimoto and Kohei Ohno and Shogo Mitsuhori and Soichi Sugano and Hanying Cho and Zhijian Liu and Kurt Keutzer},
       year={2023},
       eprint={2312.12491},
@@ -68,12 +68,12 @@ Feel free to explore each feature by following the provided links to learn more 
 ### Step0: clone this repository
 
 ```bash
-git clone https://github.com/cumulo-autumn/StreamDiffusion.git
+git clone https://github.com/cumulo-autumn/WhatIfMirror.git
 ```
 
 ### Step1: Make Environment
 
-You can install StreamDiffusion via pip, conda, or Docker(explanation below).
+You can install WhatIfMirror via pip, conda, or Docker(explanation below).
 
 ```bash
 conda create -n streamdiffusion python=3.10
@@ -108,15 +108,15 @@ pip3 install torch==2.1.0 torchvision==0.16.0 xformers --index-url https://downl
 
 details: https://pytorch.org/
 
-### Step3: Install StreamDiffusion
+### Step3: Install WhatIfMirror
 
 #### For User
 
-Install StreamDiffusion
+Install WhatIfMirror
 
 ```bash
 #for Latest Version (recommended)
-pip install git+https://github.com/cumulo-autumn/StreamDiffusion.git@main#egg=streamdiffusion[tensorrt]
+pip install git+https://github.com/cumulo-autumn/WhatIfMirror.git@main#egg=streamdiffusion[tensorrt]
 
 
 #or
@@ -148,15 +148,15 @@ python -m streamdiffusion.tools.install-tensorrt
 ### Docker Installation (TensorRT Ready)
 
 ```bash
-git clone https://github.com/cumulo-autumn/StreamDiffusion.git
-cd StreamDiffusion
+git clone https://github.com/cumulo-autumn/WhatIfMirror.git
+cd WhatIfMirror
 docker build -t stream-diffusion:latest -f Dockerfile .
 docker run --gpus all -it -v $(pwd):/home/ubuntu/streamdiffusion stream-diffusion:latest
 ```
 
 ## Quick Start
 
-You can try StreamDiffusion in [`examples`](./examples) directory.
+You can try WhatIfMirror in [`examples`](./examples) directory.
 
 | ![画像3](./assets/demo_02.gif) | ![画像4](./assets/demo_03.gif) |
 | :----------------------------: | :----------------------------: |
@@ -180,7 +180,7 @@ There is a real time img2img demo with a live webcam feed or screen capture on a
 
 ## Usage Example
 
-We provide a simple example of how to use StreamDiffusion. For more detailed examples, please refer to [`examples`](./examples) directory.
+We provide a simple example of how to use WhatIfMirror. For more detailed examples, please refer to [`examples`](./examples) directory.
 
 ### Image-to-Image
 
@@ -189,7 +189,7 @@ import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline
 from diffusers.utils import load_image
 
-from streamdiffusion import StreamDiffusion
+from streamdiffusion import WhatIfMirror
 from streamdiffusion.image_utils import postprocess_image
 
 # You can load any models using diffuser's StableDiffusionPipeline
@@ -198,8 +198,8 @@ pipe = StableDiffusionPipeline.from_pretrained("KBlueLeaf/kohaku-v2.1").to(
     dtype=torch.float16,
 )
 
-# Wrap the pipeline in StreamDiffusion
-stream = StreamDiffusion(
+# Wrap the pipeline in WhatIfMirror
+stream = WhatIfMirror(
     pipe,
     t_index_list=[32, 45],
     torch_dtype=torch.float16,
@@ -240,7 +240,7 @@ while True:
 import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline
 
-from streamdiffusion import StreamDiffusion
+from streamdiffusion import WhatIfMirror
 from streamdiffusion.image_utils import postprocess_image
 
 # You can load any models using diffuser's StableDiffusionPipeline
@@ -249,10 +249,10 @@ pipe = StableDiffusionPipeline.from_pretrained("KBlueLeaf/kohaku-v2.1").to(
     dtype=torch.float16,
 )
 
-# Wrap the pipeline in StreamDiffusion
+# Wrap the pipeline in WhatIfMirror
 # Requires more long steps (len(t_index_list)) in text2image
 # You recommend to use cfg_type="none" when text2image
-stream = StreamDiffusion(
+stream = WhatIfMirror(
     pipe,
     t_index_list=[0, 16, 32, 45],
     torch_dtype=torch.float16,
@@ -316,7 +316,7 @@ It requires TensorRT extension and time to build the engine, but it will be fast
 Stochastic Similarity Filter reduces processing during video input by minimizing conversion operations when there is little change from the previous frame, thereby alleviating GPU processing load, as shown by the red frame in the above GIF. The usage is as follows:
 
 ```python
-stream = StreamDiffusion(
+stream = WhatIfMirror(
     pipe,
     [32, 45],
     torch_dtype=torch.float16,
@@ -341,7 +341,7 @@ There are the following parameters that can be set as arguments in the function:
 
 ![rcfg](assets/cfg_conparision.png)
 
-RCFG is a method for approximately realizing CFG with competitive computational complexity compared to cases where CFG is not used. It can be specified through the cfg_type argument in the StreamDiffusion. There are two types of RCFG: one with no specified items for negative prompts RCFG Self-Negative and one where negative prompts can be specified RCFG Onetime-Negative. In terms of computational complexity, denoting the complexity without CFG as N and the complexity with a regular CFG as 2N, RCFG Self-Negative can be computed in N steps, while RCFG Onetime-Negative can be computed in N+1 steps.
+RCFG is a method for approximately realizing CFG with competitive computational complexity compared to cases where CFG is not used. It can be specified through the cfg_type argument in the WhatIfMirror. There are two types of RCFG: one with no specified items for negative prompts RCFG Self-Negative and one where negative prompts can be specified RCFG Onetime-Negative. In terms of computational complexity, denoting the complexity without CFG as N and the complexity with a regular CFG as 2N, RCFG Self-Negative can be computed in N steps, while RCFG Onetime-Negative can be computed in N+1 steps.
 
 The usage is as follows:
 
@@ -354,7 +354,7 @@ cfg_type = "full"
 cfg_type = "self"
 # RCFG Onetime-Negative
 cfg_type = "initialize"
-stream = StreamDiffusion(
+stream = WhatIfMirror(
     pipe,
     [32, 45],
     torch_dtype=torch.float16,
@@ -396,6 +396,6 @@ SD-Turbo is also available on [Hugging Face Space](https://huggingface.co/stabil
 
 ## Contributors
 
-<a href="https://github.com/cumulo-autumn/StreamDiffusion/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=cumulo-autumn/StreamDiffusion" />
+<a href="https://github.com/cumulo-autumn/WhatIfMirror/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=cumulo-autumn/WhatIfMirror" />
 </a>

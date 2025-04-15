@@ -9,7 +9,7 @@ import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline
 from PIL import Image
 
-from whatifmirror import StreamDiffusion
+from whatifmirror import WhatIfMirror
 from whatifmirror.image_utils import postprocess_image
 
 
@@ -18,7 +18,7 @@ torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
 
-class StreamDiffusionWrapper:
+class WhatIfMirrorWrapper:
     def __init__(
         self,
         model_id_or_path: str,
@@ -50,7 +50,7 @@ class StreamDiffusionWrapper:
         engine_dir: Optional[Union[str, Path]] = "engines",
     ):
         """
-        Initializes the StreamDiffusionWrapper.
+        Initializes the WhatIfMirrorWrapper.
 
         Parameters
         ----------
@@ -155,7 +155,7 @@ class StreamDiffusionWrapper:
 
         self.is_controlnet_enabled = controlnet_dicts is not None
 
-        self.stream: StreamDiffusion = self._load_model(
+        self.stream: WhatIfMirror = self._load_model(
             model_id_or_path=model_id_or_path,
             lora_dict=lora_dict,
             controlnet_dicts=controlnet_dicts,
@@ -407,7 +407,7 @@ class StreamDiffusionWrapper:
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
         engine_dir: Optional[Union[str, Path]] = "engines",
-    ) -> StreamDiffusion:
+    ) -> WhatIfMirror:
         """
         Loads the model.
 
@@ -456,7 +456,7 @@ class StreamDiffusionWrapper:
 
         Returns
         -------
-        StreamDiffusion
+        WhatIfMirror
             The loaded model.
         """
 
@@ -474,7 +474,7 @@ class StreamDiffusionWrapper:
             print("Model load has failed. Doesn't exist.")
             exit()
 
-        stream = StreamDiffusion(
+        stream = WhatIfMirror(
             pipe=pipe,
             t_index_list=t_index_list,
             torch_dtype=self.dtype,

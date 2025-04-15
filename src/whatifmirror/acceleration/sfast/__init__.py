@@ -2,11 +2,11 @@ from typing import Optional
 
 from sfast.compilers.stable_diffusion_pipeline_compiler import CompilationConfig, compile
 
-from ...pipeline import StreamDiffusion
+from ...pipeline import WhatIfMirror
 
 
 def accelerate_with_stable_fast(
-    stream: StreamDiffusion,
+    stream: WhatIfMirror,
     config: Optional[CompilationConfig] = None,
 ):
     if config is None:

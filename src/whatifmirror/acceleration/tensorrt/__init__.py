@@ -8,7 +8,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
 )
 from polygraphy import cuda
 
-from ...pipeline import StreamDiffusion
+from ...pipeline import WhatIfMirror
 from .....utils.unet_with_control import UNet2DConditionControlNetModel
 from .builder import EngineBuilder, create_onnx_path
 from .engine import AutoencoderKLEngine, UNet2DConditionModelEngine
@@ -106,7 +106,7 @@ def compile_control_unet(
 
 
 def accelerate_with_tensorrt(
-    stream: StreamDiffusion,
+    stream: WhatIfMirror,
     engine_dir: str,
     max_batch_size: int = 2,
     min_batch_size: int = 1,
