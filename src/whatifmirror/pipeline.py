@@ -4,20 +4,21 @@ from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 import numpy as np
 import PIL.Image
 import torch
-from diffusers import ControlNetModel, LCMScheduler, DiffusionPipeline, StableDiffusionXLPipeline
+from diffusers import ControlNetModel, LCMScheduler, StableDiffusionPipeline
 from diffusers.image_processor import VaeImageProcessor
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     retrieve_latents,
 )
 from huggingface_hub import hf_hub_download
 
-from whatifmirror.utils.image_filter import SimilarImageFilter
-from whatifmirror.utils.unet_with_control import UNet2DConditionControlNetModel
+from utils.image_filter import SimilarImageFilter
+from utils.unet_with_control import UNet2DConditionControlNetModel
 
-class WhatifMirror:
+
+class StreamDiffusion:
     def __init__(
         self,
-        pipe: DiffusionPipeline,
+        pipe: StableDiffusionPipeline,
         t_index_list: Union[None, List[int]] = None,
         torch_dtype: torch.dtype = torch.float16,
         width: int = 512,
@@ -44,7 +45,7 @@ class WhatifMirror:
         self.CM_lora_type = CM_lora_type
 
         self.frame_bff_size = frame_buffer_size
-    
+
         # Set time step index list and denoising steps number
         if t_index_list is None and denoising_steps_num is None:
             raise ValueError("Please provide either t_index_list or num_denosing_steps")
@@ -89,7 +90,6 @@ class WhatifMirror:
         self.vae = pipe.vae
 
         self.inference_time_ema = 0
-        self.sdxl = type(self.pipe) is StableDiffusionXLPipeline
 
     def load_lcm_lora(
         self,
@@ -100,11 +100,7 @@ class WhatifMirror:
         **kwargs,
     ) -> None:
         self.CM_lora_type = "lcm"
-        if pretrained_model_name_or_path_or_dict is None:
-            lora_id = "latent-consistency/lcm-lora-sdxl" if self.sdxl else "latent-consistency/lcm-lora-sdv1-5" 
-        else:
-            lora_id = pretrained_model_name_or_path_or_dict
-        self.pipe.load_lora_weights(lora_id, adapter_name, **kwargs)
+        self.pipe.load_lora_weights(pretrained_model_name_or_path_or_dict, adapter_name, **kwargs)
 
     def load_HyperSD_lora(
         self,
@@ -279,20 +275,6 @@ class WhatifMirror:
             self.negative_prompt_embeds = encoder_output[1]
         self.prompt_embeds = encoder_output[0].repeat(self.batch_size, 1, 1)
 
-        if self.sdxl:
-            self.add_text_embeds = encoder_output[2]
-            original_size = (self.height, self.width)
-            crops_coords_top_left = (0, 0)
-            target_size = (self.height, self.width)
-            text_encoder_projection_dim = int(self.add_text_embeds.shape[-1])
-            self.add_time_ids = self._get_add_time_ids(
-                original_size,
-                crops_coords_top_left,
-                target_size,
-                dtype=encoder_output[0].dtype,
-                text_encoder_projection_dim=text_encoder_projection_dim,
-            )
-
         if self.use_denoising_batch and self.cfg_type == "full":
             uncond_prompt_embeds = self.negative_prompt_embeds.repeat(self.batch_size, 1, 1)
         elif self.cfg_type == "initialize":
@@ -431,12 +413,10 @@ class WhatifMirror:
         self,
         x_t_latent: torch.Tensor,
         t_list: Union[torch.Tensor, list[int]],
-        added_cond_kwargs,
         idx: Optional[int] = None,
         controlnet_images: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         # TODO: Re-implement R-CFG according to the equation in the paper
-        
         if self.cfg_type == "initialize":
             x_t_latent_plus_uc = torch.concat([x_t_latent[0:1], x_t_latent], dim=0)
             t_list = torch.concat([t_list[0:1], t_list], dim=0)
@@ -452,14 +432,12 @@ class WhatifMirror:
                 t_list,
                 encoder_hidden_states=self.prompt_embeds,
                 controlnet_images=controlnet_images,
-                added_cond_kwargs=added_cond_kwargs
             )[0]
         else:
             model_pred = self.unet(
                 x_t_latent_plus_uc,
                 t_list,
                 encoder_hidden_states=self.prompt_embeds,
-                added_cond_kwargs=added_cond_kwargs,
                 return_dict=False,
             )[0]
 
@@ -508,13 +486,6 @@ class WhatifMirror:
             denoised_batch = self.scheduler_step_batch(model_pred, x_t_latent, idx)
 
         return denoised_batch, model_pred
-    
-    def _get_add_time_ids(
-        self, original_size, crops_coords_top_left, target_size, dtype, text_encoder_projection_dim=None
-    ):
-        add_time_ids = list(original_size + crops_coords_top_left + target_size)
-        add_time_ids = torch.tensor([add_time_ids], dtype=dtype)
-        return add_time_ids
 
     @torch.inference_mode()
     def encode_image(self, image_tensors: torch.Tensor) -> torch.Tensor:
@@ -535,7 +506,6 @@ class WhatifMirror:
     def predict_x0_batch(
         self, x_t_latent: torch.Tensor, controlnet_images: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
-        added_cond_kwargs = {}
         prev_latent_batch = self.x_t_latent_buffer
 
         if controlnet_images is not None:
@@ -552,10 +522,7 @@ class WhatifMirror:
             if controlnet_images is not None:
                 controlnet_images = torch.cat((controlnet_images, prev_controlnet_images), dim=0)
 
-            if self.sdxl:
-                added_cond_kwargs = {"text_embeds": self.add_text_embeds.to(self.device), "time_ids": self.add_time_ids.to(self.device)}
-
-            x_0_pred_batch, model_pred = self.unet_step(x_t_latent, t_list, controlnet_images=controlnet_images, added_cond_kwargs=added_cond_kwargs)
+            x_0_pred_batch, model_pred = self.unet_step(x_t_latent, t_list, controlnet_images=controlnet_images)
 
             if self.denoising_steps_num > 1:
                 x_0_pred_out = x_0_pred_batch[-1].unsqueeze(0)
@@ -578,9 +545,7 @@ class WhatifMirror:
             self.init_noise = x_t_latent
             for idx, t in enumerate(self.sub_timesteps_tensor):
                 t = t.view(1).repeat(self.frame_bff_size)
-                if self.sdxl:
-                    added_cond_kwargs = {"text_embeds": self.add_text_embeds.to(self.device), "time_ids": self.add_time_ids.to(self.device)}
-                x_0_pred, model_pred = self.unet_step(x_t_latent, t, idx, controlnet_images=controlnet_images, added_cond_kwargs=added_cond_kwargs)
+                x_0_pred, model_pred = self.unet_step(x_t_latent, t, idx, controlnet_images=controlnet_images)
                 if idx < len(self.sub_timesteps_tensor) - 1:
                     if self.CM_lora_type == "Hyper_SD":
                         x_t_latent = (
@@ -613,6 +578,9 @@ class WhatifMirror:
             x_t_latent = x_t_latent.to(device=self.device, dtype=self.dtype)
         else:
             if x is not None:
+                x = self.image_processor.preprocess(x, self.height, self.width).to(
+                    device=self.device, dtype=self.dtype
+                )
                 if self.similar_image_filter:
                     x = self.similar_filter(x)
                     if x is None:

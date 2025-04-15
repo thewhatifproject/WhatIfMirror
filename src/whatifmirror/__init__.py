@@ -1,1 +1,1 @@
-from .pipeline import WhatifMirror
+from .pipeline import StreamDiffusion
