@@ -9,7 +9,7 @@ import fire
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from utils.viewer import receive_images
-from whatifmirror.wrapper import StreamDiffusionWrapper
+from whatifmirror.utils.wrapper import StreamDiffusionWrapper
 
 def image_generation_process(
     queue: Queue,

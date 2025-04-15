@@ -10,7 +10,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
     retrieve_latents,
 )
 
-from whatifmirror.image_filter import SimilarImageFilter
+from whatifmirror.utils.image_filter import SimilarImageFilter
 
 
 class WhatifMirror:
