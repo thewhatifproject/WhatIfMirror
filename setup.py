@@ -29,7 +29,7 @@ install_requires = [
     deps["huggingface_hub"],
     deps["numpy"],
     deps["peft"],
-    #"stable-fast @ git+https://github.com/FlyMyAI/stable-fast.git",
+    "stable-fast @ git+https://github.com/FlyMyAI/stable-fast.git",
     deps["ninja"]
 ]
 
