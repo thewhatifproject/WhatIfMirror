@@ -384,9 +384,9 @@ class WhatIfMirrorWrapper:
             The postprocessed image.
         """
         if self.frame_buffer_size > 1:
-            return self.stream.postprocess_image(image_tensor.cpu(), output_type=output_type)
+            return self.stream.image_processor.postprocess(image_tensor.cpu(), output_type=output_type)
         else:
-            return self.stream.postprocess_image(image_tensor.cpu(), output_type=output_type)[0]
+            return self.stream.image_processor.postprocess(image_tensor.cpu(), output_type=output_type)[0]
 
     def _load_model(
         self,
