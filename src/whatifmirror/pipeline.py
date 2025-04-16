@@ -10,6 +10,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
     retrieve_latents,
 )
 from huggingface_hub import hf_hub_download
+import torch.nn.functional as F
 
 from whatifmirror.utils.image_filter import SimilarImageFilter
 from whatifmirror.utils.unet_with_control import UNet2DConditionControlNetModel
@@ -603,6 +604,7 @@ class WhatifMirror:
         x: Union[torch.Tensor, PIL.Image.Image, np.ndarray] = None,
         x_t_latent: Optional[torch.Tensor] = None,
         controlnet_images: Optional[torch.Tensor] = None,
+        upscale: Optional[bool] = False
     ) -> torch.Tensor:
         start = torch.cuda.Event(enable_timing=True)
         end = torch.cuda.Event(enable_timing=True)
@@ -626,7 +628,8 @@ class WhatifMirror:
                 )
         x_0_pred_out = self.predict_x0_batch(x_t_latent, controlnet_images=controlnet_images)
         x_output = self.decode_image(x_0_pred_out).detach().clone()
-
+        if upscale:
+            x_output = upscale_image(x_output, scale_factor=2)
         self.prev_image_result = x_output
         end.record()
         torch.cuda.synchronize()
@@ -660,3 +663,6 @@ class WhatifMirror:
         )[0]
         x_0_pred_out = (x_t_latent - self.beta_prod_t_sqrt * model_pred) / self.alpha_prod_t_sqrt
         return self.decode_image(x_0_pred_out)
+    
+    def upscale_image(image: torch.Tensor, scale_factor: int = 2) -> torch.Tensor:
+        return F.interpolate(image, scale_factor=scale_factor, mode='bicubic', align_corners=False)
