@@ -39,7 +39,6 @@ class WhatifMirrorWrapper:
         enable_similar_image_filter: bool = False,
         similar_image_filter_threshold: float = 0.98,
         similar_image_filter_max_skip_frame: int = 10,
-        use_denoising_batch: bool = True,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
         use_safety_checker: bool = False,
@@ -100,8 +99,6 @@ class WhatifMirrorWrapper:
             The threshold for similar image filter, by default 0.98.
         similar_image_filter_max_skip_frame : int, optional
             The max skip frame for similar image filter, by default 10.
-        use_denoising_batch : bool, optional
-            Whether to use denoising batch or not, by default True.
         cfg_type : Literal["none", "full", "self", "initialize"],
         optional
             The cfg_type for img2img mode, by default "self".
@@ -112,24 +109,6 @@ class WhatifMirrorWrapper:
             Whether to use safety checker or not, by default False.
         """
         self.sd_turbo = "turbo" in model_id_or_path
-
-        if mode == "txt2img":
-            if cfg_type != "none":
-                raise ValueError(
-                    f"txt2img mode accepts only cfg_type = 'none', but got {cfg_type}"
-                )
-            if use_denoising_batch and frame_buffer_size > 1:
-                if not self.sd_turbo:
-                    raise ValueError(
-                        "txt2img mode cannot use denoising batch with frame_buffer_size > 1."
-                    )
-
-        if mode == "img2img":
-            if not use_denoising_batch:
-                raise NotImplementedError(
-                    "img2img mode must use denoising batch for now."
-                )
-
         self.device = device
         self.dtype = dtype
         self.width = width
@@ -139,11 +118,8 @@ class WhatifMirrorWrapper:
         self.frame_buffer_size = frame_buffer_size
         self.batch_size = (
             len(t_index_list) * frame_buffer_size
-            if use_denoising_batch
-            else frame_buffer_size
         )
 
-        self.use_denoising_batch = use_denoising_batch
         self.use_safety_checker = use_safety_checker
 
         self.stream: WhatifMirror = self._load_model(
@@ -221,47 +197,7 @@ class WhatifMirrorWrapper:
         Union[Image.Image, List[Image.Image]]
             The generated image.
         """
-        if self.mode == "img2img":
-            return self.img2img(image, prompt)
-        else:
-            return self.txt2img(prompt)
-
-    def txt2img(
-        self, prompt: Optional[str] = None
-    ) -> Union[Image.Image, List[Image.Image], torch.Tensor, np.ndarray]:
-        """
-        Performs txt2img.
-
-        Parameters
-        ----------
-        prompt : Optional[str]
-            The prompt to generate images from.
-
-        Returns
-        -------
-        Union[Image.Image, List[Image.Image]]
-            The generated image.
-        """
-        if prompt is not None:
-            self.stream.update_prompt(prompt)
-
-        if self.sd_turbo:
-            image_tensor = self.stream.txt2img_sd_turbo(self.batch_size)
-        else:
-            image_tensor = self.stream.txt2img(self.frame_buffer_size)
-        image = self.postprocess_image(image_tensor, output_type=self.output_type)
-
-        if self.use_safety_checker:
-            safety_checker_input = self.feature_extractor(
-                image, return_tensors="pt"
-            ).to(self.device)
-            _, has_nsfw_concept = self.safety_checker(
-                images=image_tensor.to(self.dtype),
-                clip_input=safety_checker_input.pixel_values.to(self.dtype),
-            )
-            image = self.nsfw_fallback_img if has_nsfw_concept[0] else image
-
-        return image
+        return self.img2img(image, prompt)
 
     def img2img(
         self, image: Union[str, Image.Image, torch.Tensor], prompt: Optional[str] = None
@@ -432,7 +368,7 @@ class WhatifMirrorWrapper:
             height=self.height,
             do_add_noise=do_add_noise,
             frame_buffer_size=self.frame_buffer_size,
-            use_denoising_batch=self.use_denoising_batch,
+            use_denoising_batch=True,
             cfg_type=cfg_type,
         )
         if not self.sd_turbo:
