@@ -1,0 +1,18 @@
+# ML
+diffusers>=0.29.0
+transformers>=4.35.2
+accelerate
+peft
+
+# model building
+onnx
+onnxscript
+onnxruntime-gpu
+onnx_graphsurgeon
+polygraphy
+cuda-python
+
+# misc
+numpy
+Pillow
+colored
