@@ -15,7 +15,7 @@ torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
-class WhatIfMirror:
+class WhatIfMirrorWrapper:
     def __init__(
         self,
         model_id_or_path: str,
