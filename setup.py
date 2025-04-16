@@ -13,8 +13,7 @@ _deps = [
     "controlnet-aux==0.0.9",
     "huggingface_hub",
     "numpy",
-    "peft",
-    "ninja"
+    "peft"
     ]
 
 deps = {b: a for a, b in (re.findall(r"^(([^!=<>~]+)(?:[!=<>~].*)?$)", x)[0] for x in _deps)}
@@ -28,9 +27,7 @@ install_requires = [
     deps["controlnet-aux"],
     deps["huggingface_hub"],
     deps["numpy"],
-    deps["peft"],
-    "stable-fast @ git+https://github.com/FlyMyAI/stable-fast.git",
-    deps["ninja"]
+    deps["peft"]
 ]
 
 setup(
