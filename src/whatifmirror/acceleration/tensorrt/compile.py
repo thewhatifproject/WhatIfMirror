@@ -6,7 +6,7 @@ from diffusers import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import retrieve_latents
 from polygraphy import cuda
 
-from ...pipeline import StreamDiffusion
+from ...pipeline import WhatIfMirror
 from .builder import EngineBuilder, create_onnx_path
 from .engine import AutoencoderKLEngine, UNet2DConditionModelEngine
 from .models import BaseModel, VAE, VAEEncoder, UNet, UNetXLTurbo, UNetXLTurboIPAdapter
@@ -88,7 +88,7 @@ def compile_unet(
 
 
 def accelerate_with_tensorrt(
-    stream: StreamDiffusion,
+    stream: WhatIfMirror,
     engine_dir: str,
     unet_batch_size: tuple = (1, 2),
     vae_batch_size: tuple = (1, 1),

@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline, StableDiffusionXLPipeline
 
-from streamdiffusion.acceleration.tensorrt.models import UNetXLTurboIPAdapter
+from whatifmirror.acceleration.tensorrt.models import UNetXLTurboIPAdapter
 from utils.ip_adapter import patch_attention_processors, patch_unet_ip_adapter_projection
 
 

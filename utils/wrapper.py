@@ -9,13 +9,13 @@ import numpy as np
 from PIL import Image
 from diffusers import AutoencoderTiny, StableDiffusionPipeline, StableDiffusionXLPipeline
 
-from streamdiffusion import StreamDiffusion
+from whatifmirror import WhatIfMirror
 
 torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
 
-class StreamDiffusionWrapper:
+class WhatIfMirror:
     def __init__(
         self,
         model_id_or_path: str,
@@ -61,7 +61,7 @@ class StreamDiffusionWrapper:
 
         self.use_safety_checker = use_safety_checker
 
-        self.stream: StreamDiffusion = self._load_model(
+        self.stream: WhatIfMirror = self._load_model(
             model_id_or_path=model_id_or_path,
             lora_dict=lora_dict,
             lcm_lora_id=lcm_lora_id,
@@ -164,7 +164,7 @@ class StreamDiffusionWrapper:
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
         engine_dir: Optional[Union[str, Path]] = "engines",
-    ) -> StreamDiffusion:
+    ) -> WhatIfMirror:
         if self.sdxl:
             try:  # Load from local directory
                 pipe: StableDiffusionXLPipeline = StableDiffusionXLPipeline.from_pretrained(
@@ -195,7 +195,7 @@ class StreamDiffusionWrapper:
                 exit()
 
 
-        stream = StreamDiffusion(
+        stream = WhatIfMirror(
             pipe=pipe,
             t_index_list=t_index_list,
             torch_dtype=self.dtype,
@@ -238,17 +238,17 @@ class StreamDiffusionWrapper:
             try:
                 if acceleration == "tensorrt":
                     from polygraphy import cuda
-                    from streamdiffusion.acceleration.tensorrt import (
+                    from whatifmirror.acceleration.tensorrt import (
                         TorchVAEEncoder,
                         compile_unet,
                         compile_vae_decoder,
                         compile_vae_encoder,
                     )
-                    from streamdiffusion.acceleration.tensorrt.engine import (
+                    from whatifmirror.acceleration.tensorrt.engine import (
                         AutoencoderKLEngine,
                         UNet2DConditionModelEngine,
                     )
-                    from streamdiffusion.acceleration.tensorrt.models import (
+                    from whatifmirror.acceleration.tensorrt.models import (
                         VAE,
                         UNet,
                         VAEEncoder,
@@ -371,7 +371,7 @@ class StreamDiffusionWrapper:
 
                     print("TensorRT acceleration enabled.")
                 if acceleration == "sfast":
-                    from streamdiffusion.acceleration.sfast import (
+                    from whatifmirror.acceleration.sfast import (
                         accelerate_with_stable_fast,
                     )
 

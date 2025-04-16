@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 import onnx
-from streamdiffusion.acceleration.tensorrt.optimizer import Optimizer
+from whatifmirror.acceleration.tensorrt.optimizer import Optimizer
 
 
 def optimize_model(model_path, output_dir, do_fold_constants, do_infer_shapes):

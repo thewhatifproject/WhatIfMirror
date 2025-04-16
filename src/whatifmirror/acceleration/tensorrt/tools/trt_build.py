@@ -1,8 +1,8 @@
 import argparse
 from pathlib import Path
 
-from streamdiffusion.acceleration.tensorrt.models import UNetXLTurboIPAdapter
-from streamdiffusion.acceleration.tensorrt.utilities import build_engine
+from whatifmirror.acceleration.tensorrt.models import UNetXLTurboIPAdapter
+from whatifmirror.acceleration.tensorrt.utilities import build_engine
 
 def build(onnx_path, engine_path, height, width, batch_size):
 

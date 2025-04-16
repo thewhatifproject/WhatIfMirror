@@ -4,8 +4,8 @@ from pathlib import Path
 import torch
 from diffusers import AutoencoderTiny, StableDiffusionPipeline, StableDiffusionXLPipeline
 
-from streamdiffusion import StreamDiffusion
-from streamdiffusion.acceleration.tensorrt.compile import accelerate_with_tensorrt
+from whatifmirror import WhatIfMirror
+from whatifmirror.acceleration.tensorrt.compile import accelerate_with_tensorrt
 from utils.ip_adapter import patch_attention_processors, patch_unet_ip_adapter_projection
 
 
@@ -86,8 +86,8 @@ def accelerate_pipeline(is_sdxl, model_id, ip_adapter, height, width, num_timest
         patch_attention_processors(pipe)
         patch_unet_ip_adapter_projection(pipe)
 
-    # StreamDiffusion
-    stream = StreamDiffusion(
+    # WhatIfMirror
+    stream = WhatIfMirror(
         pipe,
         device=device,
         t_index_list=list(range(num_timesteps)),
