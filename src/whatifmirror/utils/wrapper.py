@@ -8,7 +8,7 @@ import torch
 import numpy as np
 from PIL import Image
 from diffusers import AutoencoderTiny, StableDiffusionPipeline, StableDiffusionXLPipeline
-
+from whatifmirror.utils.image_utils import postprocess_image
 from whatifmirror import WhatIfMirror
 
 torch.set_grad_enabled(False)
@@ -142,9 +142,9 @@ class WhatIfMirrorWrapper:
         self, image_tensor: torch.Tensor, output_type: str = "pil"
     ) -> Union[Image.Image, List[Image.Image], torch.Tensor, np.ndarray]:
         if self.frame_buffer_size > 1:
-            return self.stream.image_processor.postprocess_image(image_tensor.cpu(), output_type=output_type)
+            return postprocess_image(image_tensor.cpu(), output_type=output_type)
         else:
-            return self.stream.image_processor.postprocess_image(image_tensor.cpu(), output_type=output_type)[0]
+            return postprocess_image(image_tensor.cpu(), output_type=output_type)[0]
 
     def _load_model(
         self,

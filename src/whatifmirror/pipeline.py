@@ -571,9 +571,9 @@ class WhatIfMirror(UNet2DConditionLoadersMixin):
     ) -> torch.Tensor:
 
         # pre process
-        x = self.image_processor.preprocess(x, self.height, self.width).to(
-            device=self.device, dtype=self.dtype
-        )
+        #x = self.image_processor.preprocess(x, self.height, self.width).to(
+        #    device=self.device, dtype=self.dtype
+        #)
 
         # check if input should be encoded
         if encode_input:
