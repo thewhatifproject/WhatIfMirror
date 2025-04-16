@@ -88,18 +88,12 @@ class WhatIfMirrorWrapper:
 
     def prepare(
         self,
-        prompt: str,
-        negative_prompt: str = "",
         num_inference_steps: int = 50,
-        guidance_scale: float = 1.2,
-        delta: float = 1.0,
+        seed: int = 245
     ) -> None:
         self.stream.prepare(
-            prompt,
-            negative_prompt,
             num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            delta=delta,
+            seed=seed
         )
 
     def __call__(
