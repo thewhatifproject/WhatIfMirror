@@ -381,12 +381,7 @@ class WhatIfMirrorWrapper:
             seed = np.random.randint(0, 1000000)
 
         stream.prepare(
-            "",
-            "",
-            num_inference_steps=50,
-            guidance_scale=1.1
-            if stream.cfg_type in ["full", "self", "initialize"]
-            else 1.0,
+            num_inference_steps=100,
             generator=torch.manual_seed(seed),
             seed=seed,
         )
