@@ -33,6 +33,7 @@ class WhatIfMirrorWrapper:
         do_add_noise: bool = True,
         device_ids: Optional[List[int]] = None,
         use_lcm_lora: bool = True,
+        original_inference_steps: int = 50,
         use_tiny_vae: bool = True,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
@@ -54,6 +55,7 @@ class WhatIfMirrorWrapper:
         self.width = width
         self.height = height
         self.output_type = output_type
+        self.original_inference_steps = original_inference_steps
         self.frame_buffer_size = frame_buffer_size
         self.batch_size = (
             len(t_index_list) * frame_buffer_size
@@ -202,6 +204,7 @@ class WhatIfMirrorWrapper:
             width=self.width,
             height=self.height,
             do_add_noise=do_add_noise,
+            original_inference_steps=self.original_inference_steps,
             frame_buffer_size=self.frame_buffer_size,
             cfg_type=cfg_type,
         )
