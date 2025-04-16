@@ -11,11 +11,9 @@ from diffusers import AutoencoderTiny, StableDiffusionPipeline, StableDiffusionX
 
 from streamdiffusion import StreamDiffusion
 
-
 torch.set_grad_enabled(False)
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
-
 
 class StreamDiffusionWrapper:
     def __init__(
@@ -23,7 +21,6 @@ class StreamDiffusionWrapper:
         model_id_or_path: str,
         t_index_list: List[int],
         lora_dict: Optional[Dict[str, float]] = None,
-        mode: Literal["img2img", "txt2img"] = "img2img",
         output_type: Literal["pil", "pt", "np", "latent"] = "pil",
         lcm_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
@@ -32,87 +29,17 @@ class StreamDiffusionWrapper:
         frame_buffer_size: int = 1,
         width: int = 512,
         height: int = 512,
-        warmup: int = 10,
-        acceleration: Literal["none", "xformers", "tensorrt"] = "tensorrt",
+        acceleration: Literal["none", "tensorrt"] = "none",
         do_add_noise: bool = True,
         device_ids: Optional[List[int]] = None,
         use_lcm_lora: bool = True,
         use_tiny_vae: bool = True,
-        enable_similar_image_filter: bool = False,
-        similar_image_filter_threshold: float = 0.98,
-        similar_image_filter_max_skip_frame: int = 10,
-        use_denoising_batch: bool = True,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         seed: int = 2,
         use_safety_checker: bool = False,
         engine_dir: Optional[Union[str, Path]] = "engines",
         sdxl: bool = None
     ):
-        """
-        Initializes the StreamDiffusionWrapper.
-
-        Parameters
-        ----------
-        model_id_or_path : str
-            The model id or path to load.
-        t_index_list : List[int]
-            The t_index_list to use for inference.
-        lora_dict : Optional[Dict[str, float]], optional
-            The lora_dict to load, by default None.
-            Keys are the LoRA names and values are the LoRA scales.
-            Example: {'LoRA_1' : 0.5 , 'LoRA_2' : 0.7 ,...}
-        mode : Literal["img2img", "txt2img"], optional
-            txt2img or img2img, by default "img2img".
-        output_type : Literal["pil", "pt", "np", "latent"], optional
-            The output type of image, by default "pil".
-        lcm_lora_id : Optional[str], optional
-            The lcm_lora_id to load, by default None.
-            If None, the default LCM-LoRA
-            ("latent-consistency/lcm-lora-sdv1-5") will be used.
-        vae_id : Optional[str], optional
-            The vae_id to load, by default None.
-            If None, the default TinyVAE
-            ("madebyollin/taesd") will be used.
-        device : Literal["cpu", "cuda"], optional
-            The device to use for inference, by default "cuda".
-        dtype : torch.dtype, optional
-            The dtype for inference, by default torch.float16.
-        frame_buffer_size : int, optional
-            The frame buffer size for denoising batch, by default 1.
-        width : int, optional
-            The width of the image, by default 512.
-        height : int, optional
-            The height of the image, by default 512.
-        warmup : int, optional
-            The number of warmup steps to perform, by default 10.
-        acceleration : Literal["none", "xformers", "tensorrt"], optional
-            The acceleration method, by default "tensorrt".
-        do_add_noise : bool, optional
-            Whether to add noise for following denoising steps or not,
-            by default True.
-        device_ids : Optional[List[int]], optional
-            The device ids to use for DataParallel, by default None.
-        use_lcm_lora : bool, optional
-            Whether to use LCM-LoRA or not, by default True.
-        use_tiny_vae : bool, optional
-            Whether to use TinyVAE or not, by default True.
-        enable_similar_image_filter : bool, optional
-            Whether to enable similar image filter or not,
-            by default False.
-        similar_image_filter_threshold : float, optional
-            The threshold for similar image filter, by default 0.98.
-        similar_image_filter_max_skip_frame : int, optional
-            The max skip frame for similar image filter, by default 10.
-        use_denoising_batch : bool, optional
-            Whether to use denoising batch or not, by default True.
-        cfg_type : Literal["none", "full", "self", "initialize"],
-            The cfg_type for img2img mode, by default "self".
-            You cannot use anything other than "none" for txt2img mode.
-        seed : int, optional
-            The seed, by default 2.
-        use_safety_checker : bool, optional
-            Whether to use safety checker or not, by default False.
-        """
         self.sd_turbo = "turbo" in model_id_or_path
 
         if sdxl is None:
@@ -122,37 +49,16 @@ class StreamDiffusionWrapper:
 
         self.default_tiny_vae = "madebyollin/taesdxl" if self.sdxl else "madebyollin/taesd"
 
-        if mode == "txt2img":
-            if cfg_type != "none":
-                raise ValueError(
-                    f"txt2img mode accepts only cfg_type = 'none', but got {cfg_type}"
-                )
-            if use_denoising_batch and frame_buffer_size > 1:
-                if not self.sd_turbo:
-                    raise ValueError(
-                        "txt2img mode cannot use denoising batch with frame_buffer_size > 1."
-                    )
-
-        if mode == "img2img":
-            if not use_denoising_batch:
-                raise NotImplementedError(
-                    "img2img mode must use denoising batch for now."
-                )
-
         self.device = device
         self.dtype = dtype
         self.width = width
         self.height = height
-        self.mode = mode
         self.output_type = output_type
         self.frame_buffer_size = frame_buffer_size
         self.batch_size = (
             len(t_index_list) * frame_buffer_size
-            if use_denoising_batch
-            else frame_buffer_size
         )
 
-        self.use_denoising_batch = use_denoising_batch
         self.use_safety_checker = use_safety_checker
 
         self.stream: StreamDiffusion = self._load_model(
@@ -162,7 +68,6 @@ class StreamDiffusionWrapper:
             vae_id=vae_id,
             t_index_list=t_index_list,
             acceleration=acceleration,
-            warmup=warmup,
             do_add_noise=do_add_noise,
             use_lcm_lora=use_lcm_lora,
             use_tiny_vae=use_tiny_vae,
@@ -179,9 +84,6 @@ class StreamDiffusionWrapper:
                 self.stream.unet, device_ids=device_ids
             )
 
-        if enable_similar_image_filter:
-            self.stream.enable_similar_image_filter(similar_image_filter_threshold, similar_image_filter_max_skip_frame)
-
     def prepare(
         self,
         prompt: str,
@@ -190,21 +92,6 @@ class StreamDiffusionWrapper:
         guidance_scale: float = 1.2,
         delta: float = 1.0,
     ) -> None:
-        """
-        Prepares the model for inference.
-
-        Parameters
-        ----------
-        prompt : str
-            The prompt to generate images from.
-        num_inference_steps : int, optional
-            The number of inference steps to perform, by default 50.
-        guidance_scale : float, optional
-            The guidance scale to use, by default 1.2.
-        delta : float, optional
-            The delta multiplier of virtual residual noise,
-            by default 1.0.
-        """
         self.stream.prepare(
             prompt,
             negative_prompt,
@@ -218,39 +105,12 @@ class StreamDiffusionWrapper:
         image: Optional[Union[str, Image.Image, torch.Tensor]] = None,
         prompt: Optional[str] = None,
     ) -> Union[Image.Image, List[Image.Image]]:
-        """
-        Performs img2img or txt2img based on the mode.
-
-        Parameters
-        ----------
-        image : Optional[Union[str, Image.Image, torch.Tensor]]
-            The image to generate from.
-        prompt : Optional[str]
-            The prompt to generate images from.
-
-        Returns
-        -------
-        Union[Image.Image, List[Image.Image]]
-            The generated image.
-        """
         return self.img2img(image, prompt)
         
     def img2img(
         self, image: Union[str, Image.Image, torch.Tensor], prompt: Optional[str] = None
     ) -> Union[Image.Image, List[Image.Image], torch.Tensor, np.ndarray]:
-        """
-        Performs img2img.
-
-        Parameters
-        ----------
-        image : Union[str, Image.Image, torch.Tensor]
-            The image to generate from.
-
-        Returns
-        -------
-        Image.Image
-            The generated image.
-        """
+        
         if prompt is not None:
             self.stream.update_prompt(prompt)
 
@@ -273,19 +133,6 @@ class StreamDiffusionWrapper:
         return image
 
     def preprocess_image(self, image: Union[str, Image.Image]) -> torch.Tensor:
-        """
-        Preprocesses the image.
-
-        Parameters
-        ----------
-        image : Union[str, Image.Image, torch.Tensor]
-            The image to preprocess.
-
-        Returns
-        -------
-        torch.Tensor
-            The preprocessed image.
-        """
         if isinstance(image, str):
             image = Image.open(image).convert("RGB").resize((self.width, self.height))
         if isinstance(image, Image.Image):
@@ -298,19 +145,6 @@ class StreamDiffusionWrapper:
     def postprocess_image(
         self, image_tensor: torch.Tensor, output_type: str = "pil"
     ) -> Union[Image.Image, List[Image.Image], torch.Tensor, np.ndarray]:
-        """
-        Postprocesses the image.
-
-        Parameters
-        ----------
-        image_tensor : torch.Tensor
-            The image tensor to postprocess.
-
-        Returns
-        -------
-        Union[Image.Image, List[Image.Image]]
-            The postprocessed image.
-        """
         if self.frame_buffer_size > 1:
             return self.stream.image_processor.postprocess_image(image_tensor.cpu(), output_type=output_type)
         else:
@@ -324,7 +158,6 @@ class StreamDiffusionWrapper:
         lcm_lora_id: Optional[str] = None,
         vae_id: Optional[str] = None,
         acceleration: Literal["none", "xformers", "tensorrt"] = "tensorrt",
-        warmup: int = 10,
         do_add_noise: bool = True,
         use_lcm_lora: bool = True,
         use_tiny_vae: bool = True,
@@ -332,54 +165,6 @@ class StreamDiffusionWrapper:
         seed: int = 2,
         engine_dir: Optional[Union[str, Path]] = "engines",
     ) -> StreamDiffusion:
-        """
-        Loads the model.
-
-        This method does the following:
-
-        1. Loads the model from the model_id_or_path.
-        2. Loads and fuses the LCM-LoRA model from the lcm_lora_id if needed.
-        3. Loads the VAE model from the vae_id if needed.
-        4. Enables acceleration if needed.
-        5. Prepares the model for inference.
-        6. Load the safety checker if needed.
-
-        Parameters
-        ----------
-        model_id_or_path : str
-            The model id or path to load.
-        t_index_list : List[int]
-            The t_index_list to use for inference.
-        lora_dict : Optional[Dict[str, float]], optional
-            The lora_dict to load, by default None.
-            Keys are the LoRA names and values are the LoRA scales.
-            Example: {'LoRA_1' : 0.5 , 'LoRA_2' : 0.7 ,...}
-        lcm_lora_id : Optional[str], optional
-            The lcm_lora_id to load, by default None.
-        vae_id : Optional[str], optional
-            The vae_id to load, by default None.
-        acceleration : Literal["none", "xfomers", "sfast", "tensorrt"], optional
-            The acceleration method, by default "tensorrt".
-        warmup : int, optional
-            The number of warmup steps to perform, by default 10.
-        do_add_noise : bool, optional
-            Whether to add noise for following denoising steps or not,
-            by default True.
-        use_lcm_lora : bool, optional
-            Whether to use LCM-LoRA or not, by default True.
-        use_tiny_vae : bool, optional
-            Whether to use TinyVAE or not, by default True.
-        cfg_type : Literal["none", "full", "self", "initialize"],
-            The cfg_type for img2img mode, by default "self".
-            You cannot use anything other than "none" for txt2img mode.
-        seed : int, optional
-            The seed, by default 2.
-
-        Returns
-        -------
-        StreamDiffusion
-            The loaded model.
-        """
         if self.sdxl:
             try:  # Load from local directory
                 pipe: StableDiffusionXLPipeline = StableDiffusionXLPipeline.from_pretrained(
