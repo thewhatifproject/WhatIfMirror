@@ -16,7 +16,6 @@ from diffusers import StableDiffusionXLPipeline, DiffusionPipeline, LCMScheduler
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import retrieve_latents
 from transformers import CLIPVisionModelWithProjection, CLIPImageProcessor
 
-
 class StreamDiffusion(UNet2DConditionLoadersMixin):
     def __init__(
         self,
@@ -26,7 +25,6 @@ class StreamDiffusion(UNet2DConditionLoadersMixin):
         width: int = 512,
         height: int = 512,
         do_add_noise: bool = True,
-        use_denoising_batch: bool = True,
         frame_buffer_size: int = 1,
         cfg_type: Literal["none", "full", "self", "initialize"] = "self",
         device: Optional[str] = None,
@@ -66,23 +64,19 @@ class StreamDiffusion(UNet2DConditionLoadersMixin):
 
         # batching
         self.frame_bff_size = frame_buffer_size
-        self.use_denoising_batch = use_denoising_batch
+        self.use_denoising_batch = True
         self.denoising_steps_num = len(t_index_list)
-        if use_denoising_batch:
-            self.batch_size = self.denoising_steps_num * frame_buffer_size
-            if self.cfg_type == "initialize":
-                self.trt_unet_batch_size = (
-                    self.denoising_steps_num + 1
-                ) * self.frame_bff_size
-            elif self.cfg_type == "full":
-                self.trt_unet_batch_size = (
-                    2 * self.denoising_steps_num * self.frame_bff_size
-                )
-            else:
-                self.trt_unet_batch_size = self.denoising_steps_num * frame_buffer_size
+        self.batch_size = self.denoising_steps_num * frame_buffer_size
+        if self.cfg_type == "initialize":
+            self.trt_unet_batch_size = (
+                self.denoising_steps_num + 1
+            ) * self.frame_bff_size
+        elif self.cfg_type == "full":
+            self.trt_unet_batch_size = (
+                2 * self.denoising_steps_num * self.frame_bff_size
+            )
         else:
-            self.trt_unet_batch_size = self.frame_bff_size
-            self.batch_size = frame_buffer_size
+            self.trt_unet_batch_size = self.denoising_steps_num * frame_buffer_size
 
         # pipe
         self.pipe = pipe
