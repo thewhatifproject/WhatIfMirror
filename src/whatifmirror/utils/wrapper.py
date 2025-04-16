@@ -203,7 +203,6 @@ class WhatIfMirrorWrapper:
             height=self.height,
             do_add_noise=do_add_noise,
             frame_buffer_size=self.frame_buffer_size,
-            use_denoising_batch=True,
             cfg_type=cfg_type,
         )
         if not self.sd_turbo:
