@@ -15,6 +15,7 @@ from diffusers.models.embeddings import MultiIPAdapterImageProjection
 from diffusers import StableDiffusionXLPipeline, DiffusionPipeline, LCMScheduler
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import retrieve_latents
 from transformers import CLIPVisionModelWithProjection, CLIPImageProcessor
+import torch.nn.functional as F
 
 class WhatIfMirror(UNet2DConditionLoadersMixin):
     def __init__(
@@ -567,7 +568,8 @@ class WhatIfMirror(UNet2DConditionLoadersMixin):
         self,
         x: Union[torch.Tensor, PIL.Image.Image, np.ndarray] = None,
         encode_input: bool = True,
-        decode_output: bool = True
+        decode_output: bool = True,
+        upscale: bool = False
     ) -> torch.Tensor:
 
         # pre process
@@ -594,8 +596,13 @@ class WhatIfMirror(UNet2DConditionLoadersMixin):
         else:
             x_output = x_0_pred_out
 
+        if upscale:
+            x_output = self.upscale_image(x_output, scale_factor=2)
         return x_output
 
+    @staticmethod
+    def upscale_image(image: torch.Tensor, scale_factor: int = 2) -> torch.Tensor:
+        return F.interpolate(image, scale_factor=scale_factor, mode='bicubic', align_corners=False)
 
     @staticmethod
     def slerp(v1, v2, t, DOT_THR=0.9995, zdim=-1):
@@ -642,3 +649,4 @@ class WhatIfMirror(UNet2DConditionLoadersMixin):
             res = (s1.unsqueeze(zdim) * v1) + (s2.unsqueeze(zdim) * v2)
 
         return res
+
