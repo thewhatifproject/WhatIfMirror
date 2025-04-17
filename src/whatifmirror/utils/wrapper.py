@@ -86,16 +86,6 @@ class WhatIfMirrorWrapper:
                 self.stream.unet, device_ids=device_ids
             )
 
-    def prepare(
-        self,
-        num_inference_steps: int = 50,
-        seed: int = 245
-    ) -> None:
-        self.stream.prepare(
-            num_inference_steps=num_inference_steps,
-            seed=seed
-        )
-
     def __call__(
         self,
         image: Optional[Union[str, Image.Image, torch.Tensor]] = None,
