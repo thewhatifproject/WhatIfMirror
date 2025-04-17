@@ -100,20 +100,15 @@ class WhatIfMirrorWrapper:
         self,
         image: Optional[Union[str, Image.Image, torch.Tensor]] = None,
         prompt: Optional[str] = None,
+        upscale: Optional[bool] = False
     ) -> Union[Image.Image, List[Image.Image]]:
-        return self.img2img(image, prompt)
-        
-    def img2img(
-        self, image: Union[str, Image.Image, torch.Tensor], prompt: Optional[str] = None
-    ) -> Union[Image.Image, List[Image.Image], torch.Tensor, np.ndarray]:
-        
         if prompt is not None:
             self.stream.update_prompt(prompt)
 
         if isinstance(image, str) or isinstance(image, Image.Image):
             image = self.preprocess_image(image)
 
-        image_tensor = self.stream(image)
+        image_tensor = self.stream(image, upscale=upscale)
         image = self.postprocess_image(image_tensor, output_type=self.output_type)
 
         if self.use_safety_checker:
