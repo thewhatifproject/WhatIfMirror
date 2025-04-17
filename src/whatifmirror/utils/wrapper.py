@@ -377,7 +377,6 @@ class WhatIfMirrorWrapper:
 
         stream.prepare(
             num_inference_steps=self.original_inference_steps,
-            generator=torch.manual_seed(seed),
             seed=seed,
         )
 

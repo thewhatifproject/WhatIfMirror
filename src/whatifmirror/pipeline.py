@@ -152,7 +152,7 @@ class WhatIfMirror(UNet2DConditionLoadersMixin):
         self,
         num_inference_steps: int = 50,
         generator: Optional[torch.Generator] = torch.Generator(),
-        seed: int = 1,
+        seed: int = 27,
     ) -> None:
 
         # init generator (with seed)
