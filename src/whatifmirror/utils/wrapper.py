@@ -366,7 +366,7 @@ class WhatIfMirrorWrapper:
             seed = np.random.randint(0, 1000000)
 
         stream.prepare(
-            num_inference_steps=2,
+            num_inference_steps=self.original_inference_steps,
             seed=seed,
         )
 
