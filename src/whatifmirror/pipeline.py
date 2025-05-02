@@ -10,8 +10,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
     retrieve_latents,
 )
 from huggingface_hub import hf_hub_download
-import torch.nn.functional as F
-
 from whatifmirror.utils.image_filter import SimilarImageFilter
 from whatifmirror.utils.unet_with_control import UNet2DConditionControlNetModel
 
@@ -628,8 +626,6 @@ class WhatifMirror:
                 )
         x_0_pred_out = self.predict_x0_batch(x_t_latent, controlnet_images=controlnet_images)
         x_output = self.decode_image(x_0_pred_out).detach().clone()
-        if upscale:
-            x_output = upscale_image(x_output, scale_factor=2)
         self.prev_image_result = x_output
         end.record()
         torch.cuda.synchronize()
