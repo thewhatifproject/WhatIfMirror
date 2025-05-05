@@ -537,7 +537,7 @@ class WhatifMirrorWrapper:
                     stream.fuse_lora(lora_scale=lora_scale)
                     print(f"Use LoRA: {lora_name} in weights {lora_scale}")
 
-            if controlnet_dicts is not None:
+        if controlnet_dicts is not None:
                 stream.load_controlnet(controlnet_dicts)
                 print(f"Use controlnet: {controlnet_dicts}")
 
